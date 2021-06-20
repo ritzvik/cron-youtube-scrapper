@@ -8,7 +8,6 @@ _local = local()
 
 
 class RequestIdMiddleware:
-
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -20,12 +19,10 @@ class RequestIdMiddleware:
 
 
 class RequestIdFilter(logging.Filter):
-
     def filter(self, record):
-        if not hasattr(record, 'request_id'):
+        if not hasattr(record, "request_id"):
             record.request_id = ""
 
-        if hasattr(_local, 'request_id'):
+        if hasattr(_local, "request_id"):
             record.request_id = _local.request_id
         return True
-

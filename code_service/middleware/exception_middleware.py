@@ -6,7 +6,7 @@ logger = setup_logger(__name__)
 
 class ExceptionMiddleware:
 
-    HEALTH_CHECK_PATH = '/api/health-check'
+    HEALTH_CHECK_PATH = "/api/health-check"
 
     def __init__(self, get_response):
         self.get_response = get_response

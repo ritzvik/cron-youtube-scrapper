@@ -7,25 +7,25 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='YoutubeVideo',
+            name="YoutubeVideo",
             fields=[
-                ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('etag', models.CharField(max_length=150)),
-                ('video_id', models.CharField(db_index=True, max_length=100, unique=True)),
-                ('published_at', models.DateTimeField(db_index=True)),
-                ('title', models.CharField(max_length=1000)),
-                ('description', models.CharField(max_length=5000)),
-                ('meta', models.JSONField(default=dict)),
+                ("created_on", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("etag", models.CharField(max_length=150)),
+                (
+                    "video_id",
+                    models.CharField(db_index=True, max_length=100, unique=True),
+                ),
+                ("published_at", models.DateTimeField(db_index=True)),
+                ("title", models.CharField(max_length=1000)),
+                ("description", models.CharField(max_length=5000)),
+                ("meta", models.JSONField(default=dict)),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False,},
         ),
     ]

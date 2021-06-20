@@ -6,7 +6,6 @@ from code_service.utils.datetime_utils import get_present_datetime_in_utc
 
 
 class _BaseQueryset(QuerySet):
-
     def update(self, **kwargs):
         if kwargs and isinstance(kwargs, dict):
             kwargs.update({"modified_at": get_present_datetime_in_utc()})

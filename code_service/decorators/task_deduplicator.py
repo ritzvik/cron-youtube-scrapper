@@ -9,15 +9,16 @@ def task_deduplicator(function):
     """
     Task deduplicator for celery tasks
     """
+
     @wraps(function)
     def wrap(*args, **kwargs):
-        cache_key = f'deduplicated_{function.__name__}_running'
+        cache_key = f"deduplicated_{function.__name__}_running"
 
         if caches.has_key(cache_key) and caches.get(cache_key):
-            log.info(f'[task_deduplicator]: {function.__name__} rejected')
+            log.info(f"[task_deduplicator]: {function.__name__} rejected")
             return None
 
-        log.info(f'[task_deduplicator]: {function.__name__} accepted')
+        log.info(f"[task_deduplicator]: {function.__name__} accepted")
         caches.set(cache_key, True, caches.ONE_MINUTE)
         try:
             return_val = function(*args, **kwargs)

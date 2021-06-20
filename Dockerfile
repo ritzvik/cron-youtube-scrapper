@@ -25,4 +25,4 @@ COPY requirements.txt ./
 RUN pip install -U pip
 # RUN apt-get purge -y --auto-remove g++
 RUN pip install -r requirements.txt
-COPY ./ /code_service
+ADD ./ /code_service

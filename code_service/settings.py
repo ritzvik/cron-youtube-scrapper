@@ -121,7 +121,7 @@ DATABASES = {
             None
             if APP_SECRETS["databases"]["CONN_AGE"] < 0
             else APP_SECRETS["databases"]["CONN_AGE"]
-        )  # Use negative value for `None` CONN_AGE in env
+        ),  # Use negative value for `None` CONN_AGE in env
     }
 }
 
@@ -191,6 +191,11 @@ CELERY_TIMEZONE = "Asia/Kolkata"
 CELERY_BEAT_SCHEDULE = {
     "sample_task": {
         "task": "scrapper.tasks.populate_youtube_data_helper",
-        "schedule": crontab(minute='*/1'), # every 1 minute
+        "schedule": crontab(minute="*/1"),  # every 1 minute
     }
 }
+
+
+# Project Specific
+YOUTUBE_QUERY_STRING = APP_SECRETS["youtube_query_string"]
+YOUTUBE_KEYS = APP_SECRETS["youtube_keys"]

@@ -17,13 +17,15 @@ LOGGING_CONFIG = {
         },
         "api_log_formatter": {
             "format": '"time": "{asctime}", "request_id": "{request_id}", '
-                      '"module": "{name}", "message": "{message}"',
+            '"module": "{name}", "message": "{message}"',
             "style": "{",
-        }
+        },
     },
     "filters": {
         "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"},
-        "request_id": {"()": "code_service.middleware.logger_middleware.RequestIdFilter"},
+        "request_id": {
+            "()": "code_service.middleware.logger_middleware.RequestIdFilter"
+        },
     },
     "handlers": {
         "console": {

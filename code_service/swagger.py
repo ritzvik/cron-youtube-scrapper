@@ -6,10 +6,7 @@ from drf_yasg import openapi
 
 
 swagger_schema_view = get_schema_view(
-    openapi.Info(
-        title="API Docs for code-service",
-        default_version="v1",
-    ),
+    openapi.Info(title="API Docs for code-service", default_version="v1",),
     public=True,
     permission_classes=(permissions.AllowAny,),
 )

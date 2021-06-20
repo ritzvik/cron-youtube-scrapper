@@ -20,20 +20,36 @@ services:
 
   celery_beat:
     build: .
-    entrypoint: celery -A code_service worker -B
+    volumes:
+      - ./:/code_service
+    entrypoint: celery -A code_service worker -B --loglevel DEBUG
     depends_on:
       - db
       - redis_cache
 
   code_service_migration:
     build: .
+    volumes:
+      - ./:/code_service
     entrypoint: python manage.py migrate
     depends_on:
       - db
       - redis_cache
+  
+  code_service_test:
+    build: .
+    volumes:
+      - ./:/code_service
+    entrypoint: python manage.py test
+    depends_on:
+      - db
+      - redis_cache
+      - code_service_migration
 
   code_service:
     build: .
+    volumes:
+      - ./:/code_service
     entrypoint: python manage.py runserver 0.0.0.0:3012
     ports:
       - "3012:3012"

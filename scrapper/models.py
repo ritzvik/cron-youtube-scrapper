@@ -4,6 +4,7 @@ from django.db import models
 
 from code_service.core.abstract_models import BigIDAbstract
 
+
 class YoutubeVideo(BigIDAbstract):
     etag = models.CharField(max_length=150)
     video_id = models.CharField(unique=True, db_index=True, max_length=100)

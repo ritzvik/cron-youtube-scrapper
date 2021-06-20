@@ -8,11 +8,13 @@ from scrapper.entity_member_functions import YoutubeScrapperService
 _module_name = __name__
 log = setup_logger(_module_name)
 
+
 class GeneralTask(celery.Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         log.critical(
             f"Error in task_id {exc} {task_id} {args} {kwargs} {einfo}", exc_info=True
         )
+
 
 # celery commands
 # $ celery -A code_service beat -l INFO
@@ -23,6 +25,7 @@ class GeneralTask(celery.Task):
 def populate_youtube_data():
     log.info("cron ran")
     YoutubeScrapperService.store_youtube_results()
+
 
 @shared_task(default_retry_delay=30, base=GeneralTask)
 @task_deduplicator
