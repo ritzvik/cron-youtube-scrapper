@@ -1,0 +1,144 @@
+image: atlassian/pipelines-awscli
+
+definitions:
+  # services:
+  #   docker:
+  #     memory: 3072
+  steps:
+    - step: &slack-prod
+        name: Notify over Slack channel
+        script:
+          - pipe: atlassian/slack-notify:0.2.3
+            variables:
+              WEBHOOK_URL: $SLACK_MSG_URL_PROD
+              MESSAGE: "Deployed build:$BITBUCKET_BUILD_NUMBER from *$BITBUCKET_BRANCH* branch of *$BITBUCKET_REPO_SLUG* repo, with commit $BITBUCKET_COMMIT to *$PROD_MIGRATION_CLUSTER* for *$BITBUCKET_REPO_SLUG*"
+
+    - step: &slack-preprod
+        name: Notify over Slack channel
+        script:
+          - pipe: atlassian/slack-notify:0.2.3
+            variables:
+              WEBHOOK_URL: $SLACK_MSG_URL_PROD
+              MESSAGE: "Deployed build:$BITBUCKET_BUILD_NUMBER from *$BITBUCKET_BRANCH* branch of *$BITBUCKET_REPO_SLUG* repo, with commit $BITBUCKET_COMMIT to *$PROD_MIGRATION_CLUSTER* for *$BITBUCKET_REPO_SLUG preprod*"
+
+    - step: &build-image
+        name: Build 
+        deployment: build-image
+        # size: 2x
+        services:
+          - docker
+        script:
+          - docker build -t test:0 -f Dockerfile .
+
+    - step: &build-push-image-prod
+        name: Build and push to ECR
+        deployment: build-push-image
+        # size: 2x
+        services:
+          - docker
+        script:
+          - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+          - export BUILD_ID=${BITBUCKET_REPO_SLUG}_${BITBUCKET_BRANCH}_${BITBUCKET_COMMIT}_${BITBUCKET_BUILD_NUMBER}_prod
+          - echo $BUILD_ID
+          - docker build -t api:0 -f Dockerfile .
+          - docker tag api:0 ${AWS_REGISTRY_URL}:$BUILD_ID
+          - echo ${AWS_REGISTRY_URL}:$BUILD_ID
+          - docker push ${AWS_REGISTRY_URL}:$BUILD_ID
+
+    - step: &build-push-image-preprod
+        name: Build and push to ECR
+        deployment: build-push-image
+        # size: 2x
+        services:
+          - docker
+        script:
+          - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+          - export BUILD_ID=${BITBUCKET_REPO_SLUG}_${BITBUCKET_BRANCH}_${BITBUCKET_COMMIT}_${BITBUCKET_BUILD_NUMBER}_preprod
+          - echo $BUILD_ID
+          - docker build -t api:0 -f Dockerfile .
+          - docker tag api:0 ${AWS_REGISTRY_URL}:$BUILD_ID
+          - echo ${AWS_REGISTRY_URL}:$BUILD_ID
+          - docker push ${AWS_REGISTRY_URL}:$BUILD_ID
+
+    - step: &deploy-preprod
+        name: Deploy to preprod k8s
+        deployment: preprod
+        image:
+          name: 662360374697.dkr.ecr.ap-south-1.amazonaws.com/deploy:kctl
+          aws:
+            access-key: $AWS_ACCESS_KEY_ID
+            secret-key: $AWS_SECRET_ACCESS_KEY
+        services:
+          - docker
+        script:
+          - export BUILD_ID=${BITBUCKET_REPO_SLUG}_${BITBUCKET_BRANCH}_${BITBUCKET_COMMIT}_${BITBUCKET_BUILD_NUMBER}_preprod
+          - export CLUSTER=$PROD_MIGRATION_CLUSTER
+          - export CONTEXT=$PROD_MIGRATION_CONTEXT
+          - export NS=""
+          - echo $CLUSTER
+          - echo $CONTEXT
+          - echo ${AWS_REGISTRY_URL}:${BUILD_ID}
+          - kctl --context ${PROD_MIGRATION_CONTEXT} set image deployment/${PREPROD_DEPLOYMENT_NAME} ${PREPROD_CONTAINER_NAME}=${AWS_REGISTRY_URL}:$BUILD_ID -n ${PREPROD_NS}
+
+    - step: &deploy-prod
+        name: Deploy to production k8s
+        deployment: production
+        image:
+          name: 662360374697.dkr.ecr.ap-south-1.amazonaws.com/deploy:kctl
+          aws:
+            access-key: $AWS_ACCESS_KEY_ID
+            secret-key: $AWS_SECRET_ACCESS_KEY
+        services:
+          - docker
+        script:
+          - export BUILD_ID=${BITBUCKET_REPO_SLUG}_${BITBUCKET_BRANCH}_${BITBUCKET_COMMIT}_${BITBUCKET_BUILD_NUMBER}_prod
+          - export CLUSTER=$PROD_MIGRATION_CLUSTER
+          - export CONTEXT=$PROD_MIGRATION_CONTEXT
+          - export NS=""
+          - echo $CLUSTER
+          - echo $CONTEXT
+          - echo ${AWS_REGISTRY_URL}:${BUILD_ID}
+          - kctl --context ${PROD_MIGRATION_CONTEXT} set image deployment/${PROD_DEPLOYMENT_NAME} ${PROD_CONTAINER_NAME}=${AWS_REGISTRY_URL}:$BUILD_ID -n ${PROD_NS}
+          - kctl --context ${PROD_MIGRATION_CONTEXT} set image deployment/${PROD_WORKER_DEPLOYMENT_NAME} ${PROD_WORKER_CONTAINER_NAME}=${AWS_REGISTRY_URL}:$BUILD_ID -n ${PROD_NS}
+
+    - step: &deploy-just-worker-prod
+        name: Deploy to production k8s
+        deployment: production
+        image:
+          name: 662360374697.dkr.ecr.ap-south-1.amazonaws.com/deploy:kctl
+          aws:
+            access-key: $AWS_ACCESS_KEY_ID
+            secret-key: $AWS_SECRET_ACCESS_KEY
+        services:
+          - docker
+        script:
+          - export BUILD_ID=${BITBUCKET_REPO_SLUG}_${BITBUCKET_BRANCH}_${BITBUCKET_COMMIT}_${BITBUCKET_BUILD_NUMBER}_prod
+          - export CLUSTER=$PROD_MIGRATION_CLUSTER
+          - export CONTEXT=$PROD_MIGRATION_CONTEXT
+          - export NS=""
+          - echo $CLUSTER
+          - echo $CONTEXT
+          - echo ${AWS_REGISTRY_URL}:${BUILD_ID}
+          - kctl --context ${PROD_MIGRATION_CONTEXT} set image deployment/${PROD_WORKER_DEPLOYMENT_NAME} ${PROD_WORKER_CONTAINER_NAME}=${AWS_REGISTRY_URL}:$BUILD_ID -n ${PROD_NS}
+
+pipelines:
+  branches:
+    master:
+      - step: *build-push-image-prod
+      - step: *deploy-prod
+      - step: *slack-prod
+  custom:
+    prod:
+      - step: *build-push-image-prod
+      - step: *deploy-prod
+      - step: *slack-prod
+    just-worker-prod:
+      - step: *build-push-image-prod
+      - step: *deploy-just-worker-prod
+      - step: *slack-prod
+    preprod:
+      - step: *build-push-image-preprod
+      - step: *deploy-preprod
+      - step: *slack-preprod
+    build:
+      - step: *build-image

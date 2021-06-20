@@ -1,0 +1,29 @@
+databases:
+  DB_NAME: 'code' # 'db0'
+  DB_USER: 'pg'
+  DB_PASSWORD: 'password'
+  DB_HOST: 'db'
+  DB_PORT: '5432'
+  CONN_AGE: 60
+
+
+ENVIRONMENT: 'local_rit'
+
+DEBUG: True
+
+# APP SECRETS
+
+DJANGO_SECRET_KEY: 'znu@df2u!hvqe+03psfp-u11rs8e91$)h0)zb+1i^=z_@83rm='
+
+redis:
+  host: 'redis_cache'
+  port: '6379'
+
+caches:
+  backend: 'django_redis.cache.RedisCache'
+  options:
+    client_class: 'django_redis.client.DefaultClient'
+    ignore_exceptions: True
+    parser_class: 'redis.connection.HiredisParser'
+
+cache_prefix: 'code_local'
