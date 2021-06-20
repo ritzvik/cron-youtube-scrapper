@@ -46,6 +46,7 @@ class GetYoutubeSearchResults:
 
     @staticmethod
     def get_query_params() -> dict:
+        log.info(f"youtube API keys {settings.YOUTUBE_KEYS}")
         return {
             "part": "snippet",
             "maxResults": "50",
