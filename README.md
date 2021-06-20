@@ -24,6 +24,7 @@ docker-compose up code_service_test
 ## Secrets File
   - The config file is `config/app_secrets/common_settings.yml`. I would generally gitignore it, and not push it to the repo, but doing it here for the time being.
   - You can modify the search term on youtube and the used API keys in the config file. They are named `youtube_query_string` and `youtube_keys` respectively.
+  - **If DB is not getting populated, please try with new API keys**
 
 ## API Docs
   - API documentation can be accessed [here](http://localhost:3012/api-docs) when docker is running. APIs can be tried out there directly from the browser.
