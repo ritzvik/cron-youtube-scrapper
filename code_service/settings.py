@@ -15,6 +15,10 @@ from celery.schedules import crontab
 import os
 import yaml
 
+from code_service.environ import EnvironmentVars
+
+ENV_VARS = EnvironmentVars()
+
 config_file = os.environ.get("APP_SECRET_FILE_PATH")
 
 if not config_file:
@@ -33,7 +37,7 @@ try:
 finally:
     stream.close()
 
-ENVIRONMENT = APP_SECRETS.get("ENVIRONMENT", "dev")
+ENVIRONMENT = ENV_VARS.ENVIRONMENT
 
 load_dotenv(verbose=True)
 
@@ -46,10 +50,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = APP_SECRETS["DJANGO_SECRET_KEY"]
+SECRET_KEY = ENV_VARS.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = APP_SECRETS["DEBUG"]
+DEBUG = ENV_VARS.DEBUG
 
 ALLOWED_HOSTS = ["*"]
 # cors settings
@@ -112,16 +116,12 @@ WSGI_APPLICATION = "code_service.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": APP_SECRETS["databases"]["DB_NAME"],
-        "USER": APP_SECRETS["databases"]["DB_USER"],
-        "PASSWORD": APP_SECRETS["databases"]["DB_PASSWORD"],
-        "HOST": APP_SECRETS["databases"]["DB_HOST"],
-        "PORT": APP_SECRETS["databases"]["DB_PORT"],
-        "CONN_MAX_AGE": (
-            None
-            if APP_SECRETS["databases"]["CONN_AGE"] < 0
-            else APP_SECRETS["databases"]["CONN_AGE"]
-        ),  # Use negative value for `None` CONN_AGE in env
+        "NAME": ENV_VARS.DB_NAME,
+        "USER": ENV_VARS.DB_USER,
+        "PASSWORD": ENV_VARS.DB_PWD,
+        "HOST": ENV_VARS.DB_HOST,
+        "PORT": ENV_VARS.DB_PORT,
+        "CONN_MAX_AGE": ENV_VARS.DB_CONN_AGE
     }
 }
 
@@ -138,8 +138,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-REDIS_HOST = APP_SECRETS["redis"]["host"]
-REDIS_PORT = APP_SECRETS["redis"]["port"]
+REDIS_HOST = ENV_VARS.REDIS_HOST
+REDIS_PORT = ENV_VARS.REDIS_PORT
 
 
 CACHES = {
@@ -177,7 +177,7 @@ CONN_MAX_AGE = None
 
 STATIC_URL = "/static/"
 APPEND_SLASH = True
-CACHE_PREFIX = APP_SECRETS["cache_prefix"]
+CACHE_PREFIX = ENV_VARS.CACHE_PREFIX
 
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 
@@ -197,5 +197,5 @@ CELERY_BEAT_SCHEDULE = {
 
 
 # Project Specific
-YOUTUBE_QUERY_STRING = APP_SECRETS["youtube_query_string"]
-YOUTUBE_KEYS = APP_SECRETS["youtube_keys"]
+YOUTUBE_QUERY_STRING = ENV_VARS.YOUTUBE_QUERY_STRING
+YOUTUBE_KEYS = ENV_VARS.YOUTUBE_KEYS

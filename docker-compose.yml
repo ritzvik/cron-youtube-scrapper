@@ -29,6 +29,15 @@ services:
 
   code_service_migration:
     build: .
+    environment: 
+      ENVIRONMENT: "dev"
+      DB_NAME: "code"
+      DB_USER: "pg"
+      DB_PWD: "password"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      REDIS_HOST: "redis_cache"
+      REDIS_PORT: "6379"
     volumes:
       - ./:/code_service
     entrypoint: python manage.py migrate
@@ -38,6 +47,15 @@ services:
   
   code_service_test:
     build: .
+    environment: 
+      ENVIRONMENT: "dev"
+      DB_NAME: "code"
+      DB_USER: "pg"
+      DB_PWD: "password"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      REDIS_HOST: "redis_cache"
+      REDIS_PORT: "6379"
     volumes:
       - ./:/code_service
     entrypoint: python manage.py test
@@ -48,6 +66,15 @@ services:
 
   code_service:
     build: .
+    environment: 
+      ENVIRONMENT: "dev"
+      DB_NAME: "code"
+      DB_USER: "pg"
+      DB_PWD: "password"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      REDIS_HOST: "redis_cache"
+      REDIS_PORT: "6379"
     volumes:
       - ./:/code_service
     entrypoint: python manage.py runserver 0.0.0.0:3012
